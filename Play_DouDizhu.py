@@ -7,29 +7,29 @@ ALLOW_FOUR_TWO = True
 
 #定义牌型
 class COMB_TYPE:
-	PASS, SINGLE, PAIR, TRIPLE, TRIPLE_ONE, TRIPLE_TWO, FOURTH_TWO_ONES, FOURTH_TWO_PAIRS, STRIGHT, BOMB, KING_PAIR = range(11)
+    PASS, SINGLE, PAIR, TRIPLE, TRIPLE_ONE, TRIPLE_TWO, FOURTH_TWO_ONES, FOURTH_TWO_PAIRS, STRIGHT, BOMB, KING_PAIR = range(11)
 
-	
+    
 #斗地主程序，启动后模拟3个玩家洗牌，抓拍，套路出牌，到最终分出胜负。
 class Doudizhu:
     def __init__(self):
-	    #定义牌的映射值
+        #定义牌的映射值
         self.a=[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,
                 19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,
                 36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53]
         #本局玩家持有牌数组[[],[],[]]
-		self.users=[]
-		#历史出牌的内容
+        self.users=[]
+        #历史出牌的内容
         self.handout_hist=[]
 
-	#洗牌，随机生成54个数的数组，并抽掉一个数
+    #洗牌，随机生成54个数的数组，并抽掉一个数
     def xipai(self):
         random.shuffle(self.a)
         n=random.randint(1,54)
         b=self.a[:n]
         c=self.a[n:]
         self.a=c+b
-		
+        
     #发牌，最后留3张，其他分3份
     def fapai(self):
         self.str1=self.a[:-3:3]
@@ -37,7 +37,7 @@ class Doudizhu:
         self.str3=self.a[2:-3:3]
         self.str4=self.a[-3:]
 
-	#随机指定一个地主
+    #随机指定一个地主
     def qiangdizhu(self):
         n=random.randint(0,2)
         self.dizhu=n
@@ -49,13 +49,13 @@ class Doudizhu:
         if n==2:
             self.str3+=self.str4
 
-	#对牌进行升序排序，方便计算出牌的排列组合
+    #对牌进行升序排序，方便计算出牌的排列组合
     def mapai(self):
         self.str1.sort()
         self.str2.sort()
         self.str3.sort()
 
-	#牌面和洗牌id的映射
+    #牌面和洗牌id的映射
     def yingshe(self):
         paizd=[(0,'3'),(1,'3'),(2,'3'),(3,'3'),
                (4,'4'),(5,'4'),(6,'4'),(7,'4'),
@@ -86,8 +86,8 @@ class Doudizhu:
         self.users.append([int(x) for x in paistr2.strip().split(' ')])
         self.users.append([int(x) for x in paistr3.strip().split(' ')])
         print self.users
-	
-	
+    
+    
     #出牌大小比较:comb2是否比comb1大
     def can_comb2_beat_comb1(comb1, comb2):
         if comb2['type'] == COMB_TYPE.PASS:
@@ -186,7 +186,7 @@ class Doudizhu:
     
         return combs
 
-	#出牌后把出掉的牌从持有牌中剔除，返回剩余的牌
+    #出牌后把出掉的牌从持有牌中剔除，返回剩余的牌
     def make_hand(pokers, hand):
         poker_clone = pokers[:]
         if hand['type'] == COMB_TYPE.SINGLE:
@@ -237,10 +237,10 @@ class Doudizhu:
             poker_clone.remove(16)
             poker_clone.remove(17)
         return poker_clone
-		
-	#上游PASS之后，我方主动出牌策略：
-	#循环持有牌的所有出牌可能，优先顺序为3带x，顺子，对子，单牌，炸弹，王炸
-	#同种牌里面，找到最小的出
+        
+    #上游PASS之后，我方主动出牌策略：
+    #循环持有牌的所有出牌可能，优先顺序为3带x，顺子，对子，单牌，炸弹，王炸
+    #同种牌里面，找到最小的出
     def handout_maxnum(self,all_hands):
         the_triple_two=None
         the_triple_one=None
@@ -268,7 +268,7 @@ class Doudizhu:
                     the_triple=hand
                 elif self.can_comb2_beat_comb1(hand,the_triple):
                     the_triple=hand
-			            if hand['type']==COMB_TYPE.STRIGHT:
+                        if hand['type']==COMB_TYPE.STRIGHT:
             elif the_stright is None:
                     the_stright=hand
                 elif self.can_comb2_beat_comb1(hand,the_stright):
@@ -324,21 +324,21 @@ class Doudizhu:
             before_lasthandout=self.handout_hist[handout_seq-2]
 
         handout={'type':COMB_TYPE.PASS,'name':'PASS'}
-		#第一次出牌，或者上游PASS以及上上游PASS, 本次为主动出牌策略
+        #第一次出牌，或者上游PASS以及上上游PASS, 本次为主动出牌策略
         if handout_seq==0 or (handout_seq>0 and last_handout['type'] == COMB_TYPE.PASS and before_lasthandout['type'] == COMB_TYPE.PASS):
             #主动出牌策略
-			handout=self.handout_maxnum(all_hands)
+            handout=self.handout_maxnum(all_hands)
                 
         else:
-		    #被动出牌策略:找到能大住上次出牌的牌，或者大住上上次出牌的牌
-			#由于排序是按照升序排序，出牌会自动选择能大住，但最小的牌打出
+            #被动出牌策略:找到能大住上次出牌的牌，或者大住上上次出牌的牌
+            #由于排序是按照升序排序，出牌会自动选择能大住，但最小的牌打出
             for hand in all_hands:
                 if last_handout['type']<>COMB_TYPE.PASS and self.can_comb2_beat_comb1(last_handout,hand):
                     handout=hand
                 elif last_handout['type']==COMB_TYPE.PASS and before_lasthandout<>COMB_TYPE.PASS and self.can_comb2_beat_comb1(before_lasthandout,hand):
                     handout=hand 
         
-		#打印出牌日志
+        #打印出牌日志
         print "\r\nseq_no:",handout_seq
         if cur_player==self.dizhu:
             print "dizhu:user"+str(cur_player)+":"+str(self.users[cur_player])
@@ -347,10 +347,10 @@ class Doudizhu:
             print "farmer:user"+str(cur_player)+":"+str(self.users[cur_player])
             print "farmer:user"+str(cur_player)+":"+str(handout)
 
-		#出牌后剔除已出的牌
+        #出牌后剔除已出的牌
         self.users[cur_player]=self.make_hand(self.users[cur_player],handout)
 
-		#如果剔除完成后，当前玩家手中无牌，则宣布胜利
+        #如果剔除完成后，当前玩家手中无牌，则宣布胜利
         if (len(self.users[cur_player]) == 0):
             self.is_end ='Y'
             print "user"+str(cur_player)+" win"
@@ -358,14 +358,14 @@ class Doudizhu:
         return handout
 
 
-	#开始打牌
+    #开始打牌
     def start(self):
-	    self.xipai()
+        self.xipai()
         self.fapai()
         self.qiangdizhu()
         self.mapai()
         self.yingshe()
-	
+    
         self.is_end='N'
         handout_seq=0
         while self.is_end <> 'Y':
