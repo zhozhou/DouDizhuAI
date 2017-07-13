@@ -1,8 +1,13 @@
+# -- coding: utf-8 --
 import random
+import sys
+
+reload(sys)
+sys.setdefaultencoding('utf-8')
 
 #配置出牌规则
 ALLOW_THREE_ONE = True
-ALLOW_THREE_TWO = False
+ALLOW_THREE_TWO = True
 ALLOW_FOUR_TWO = True
 
 #定义牌型
@@ -17,6 +22,9 @@ class Doudizhu:
         self.a=[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,
                 19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,
                 36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53]
+                
+        self.poker_mapping={'1':'1','2':'2','3':'3','4':'4','5':'5','6':'6','7':'7','8':'8','9':'9'
+                            ,'10':'10','11':'J','12':'Q','13':'K','14':'A','15':'2','16':u'小王','17':u'大王'}
         #本局玩家持有牌数组[[],[],[]]
         self.users=[]
         #历史出牌的内容
@@ -41,7 +49,7 @@ class Doudizhu:
     def qiangdizhu(self):
         n=random.randint(0,2)
         self.dizhu=n
-        print "dizhu is user"+str(n)
+        print "玩家"+str(n)+"叫地主"
         if n==0:
             self.str1+=self.str4
         if n==1:
@@ -72,6 +80,7 @@ class Doudizhu:
                (48,'15'),(49,'15'),(50,'15'),(51,'15'),
                (52,'16'),(53,'17')]
 
+               
         zdpai = dict(paizd)
         paistr1=''
         for i in range (len(self.str1)):
@@ -85,11 +94,11 @@ class Doudizhu:
         self.users.append([int(x) for x in paistr1.strip().split(' ')])
         self.users.append([int(x) for x in paistr2.strip().split(' ')])
         self.users.append([int(x) for x in paistr3.strip().split(' ')])
-        print self.users
+
     
     
     #出牌大小比较:comb2是否比comb1大
-    def can_comb2_beat_comb1(comb1, comb2):
+    def can_comb2_beat_comb1(self,comb1, comb2):
         if comb2['type'] == COMB_TYPE.PASS:
             return False
     
@@ -187,7 +196,7 @@ class Doudizhu:
         return combs
 
     #出牌后把出掉的牌从持有牌中剔除，返回剩余的牌
-    def make_hand(pokers, hand):
+    def make_hand(self,pokers, hand):
         poker_clone = pokers[:]
         if hand['type'] == COMB_TYPE.SINGLE:
             poker_clone.remove(hand['main'])
@@ -253,23 +262,23 @@ class Doudizhu:
 
         for hand in all_hands:
 
-            if hand['type']==COMB_TYPE.TRIPLE_TWO:
-                if the_triple_two is None:
-                    the_triple_two=hand
-                elif self.can_comb2_beat_comb1(hand,the_triple_two):
-                    the_triple_two=hand
-            elif hand['type']==COMB_TYPE.TRIPLE_ONE:
+            if hand['type']==COMB_TYPE.TRIPLE_ONE:
                 if the_triple_one is None:
                     the_triple_one=hand
                 elif self.can_comb2_beat_comb1(hand,the_triple_one):
                     the_triple_one=hand
+            elif hand['type']==COMB_TYPE.TRIPLE_TWO:
+                if the_triple_two is None:
+                    the_triple_tow=hand
+                elif self.can_comb2_beat_comb1(hand,the_triple_tow):
+                    the_triple_tow=hand
             elif hand['type']==COMB_TYPE.TRIPLE:
                 if the_triple is None:
                     the_triple=hand
                 elif self.can_comb2_beat_comb1(hand,the_triple):
                     the_triple=hand
-                        if hand['type']==COMB_TYPE.STRIGHT:
-            elif the_stright is None:
+            elif hand['type']==COMB_TYPE.STRIGHT:
+                if the_stright is None:
                     the_stright=hand
                 elif self.can_comb2_beat_comb1(hand,the_stright):
                     the_stright=hand
@@ -294,14 +303,15 @@ class Doudizhu:
                 elif self.can_comb2_beat_comb1(hand,the_kingpair):
                     the_kingpair=hand
               
-        if the_stright is not None:
-            return the_stright
+
+        if the_triple_one is not None:
+            return the_triple_one
         elif the_triple_two is not None:
             return the_triple_two
-        elif the_triple_one is not None:
-            return the_triple_one
         elif the_triple is not None:
             return the_triple
+        elif the_stright is not None:
+            return the_stright
         elif the_pair is not None:
             return the_pair
         elif the_single is not None:
@@ -313,7 +323,26 @@ class Doudizhu:
         else:
             print 'Unknown type'
             return all_hands[0]
-        
+
+    def print_hand(self,hand):
+        if hand['name']=='STRIGHT':
+            return "顺子："+self.poker_mapping[str(int(hand['sub'])-int(hand['main'])+1)]+"--"+self.poker_mapping[str(int(hand['sub']))]
+        if hand['name']=='TRIPLE_ONE':
+            return "三带一: "+self.poker_mapping[str(hand['main'])]+"*3,"+self.poker_mapping[str(hand['sub'])]
+        if hand['name']=='TRIPLE_TWO':
+            return "三带一对: "+self.poker_mapping[str(hand['main'])]+"*3,"+self.poker_mapping[str(hand['sub'])]+"*2"
+        if hand['name']=='TRIPLE':
+            return "三张: "+self.poker_mapping[str(hand['main'])]+"*3"
+        if hand['name']=='PASS':
+            return "过"
+        if hand['name']=='PAIR':
+            return "对子： "+self.poker_mapping[str(hand['main'])]+"*2"
+        if hand['name']=='BOMB':
+            return "炸弹: "+self.poker_mapping[str(hand['main'])]+"*4"
+        if hand['name']=='KING_PAIR':
+            return "王炸"
+        if hand['name']=='SINGLE':
+            return "单牌: "+self.poker_mapping[str(hand['main'])]
 
     #依据上游历史出牌的内容，决定本次出牌的内容
     def hand_out(self,last_handout,handout_seq):
@@ -340,20 +369,19 @@ class Doudizhu:
         
         #打印出牌日志
         print "\r\nseq_no:",handout_seq
+        user='农民'
         if cur_player==self.dizhu:
-            print "dizhu:user"+str(cur_player)+":"+str(self.users[cur_player])
-            print "dizhu:user"+str(cur_player)+":"+str(handout)
-        else:
-            print "farmer:user"+str(cur_player)+":"+str(self.users[cur_player])
-            print "farmer:user"+str(cur_player)+":"+str(handout)
-
+            user='地主'
+            
+        print str(user)+"["+str(cur_player)+"]剩余牌: ",', '.join([self.poker_mapping[str(x)] for x in self.users[cur_player]])
+        print str(user)+"["+str(cur_player)+"]出牌:    "+self.print_hand(handout)
         #出牌后剔除已出的牌
         self.users[cur_player]=self.make_hand(self.users[cur_player],handout)
 
         #如果剔除完成后，当前玩家手中无牌，则宣布胜利
         if (len(self.users[cur_player]) == 0):
             self.is_end ='Y'
-            print "user"+str(cur_player)+" win"
+            print str(user)+"["+str(cur_player)+"] 胜利！"
 
         return handout
 
