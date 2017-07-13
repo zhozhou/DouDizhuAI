@@ -143,7 +143,7 @@ class Doudizhu:
                 #TRIPLE
                 combs.append({'type':COMB_TYPE.TRIPLE,'name':'TRIPLE', 'main':poker})
                 for poker2 in dic:
-                    if ALLOW_THREE_ONE and dic[poker2] >= 1 and poker2 != poker:
+                    if ALLOW_THREE_ONE and dic[poker2] >= 1 and poker2 != poker and poker2<>16 and poker2<>17:
                         #TRIPLE_ONE
                         combs.append({'type':COMB_TYPE.TRIPLE_ONE,'name':'TRIPLE_ONE', 'main':poker, 'sub':poker2})
                     if ALLOW_THREE_TWO and dic[poker2] >= 2 and poker2 != poker:
@@ -373,15 +373,15 @@ class Doudizhu:
         if cur_player==self.dizhu:
             user='地主'
             
-        print str(user)+"["+str(cur_player)+"]剩余牌: ",', '.join([self.poker_mapping[str(x)] for x in self.users[cur_player]])
-        print str(user)+"["+str(cur_player)+"]出牌:    "+self.print_hand(handout)
+        print ""+str(user)+"["+str(cur_player)+"]剩余牌: ",', '.join([self.poker_mapping[str(x)] for x in self.users[cur_player]])
+        print ""+str(user)+"["+str(cur_player)+"]出牌:    "+self.print_hand(handout)
         #出牌后剔除已出的牌
         self.users[cur_player]=self.make_hand(self.users[cur_player],handout)
 
         #如果剔除完成后，当前玩家手中无牌，则宣布胜利
         if (len(self.users[cur_player]) == 0):
             self.is_end ='Y'
-            print str(user)+"["+str(cur_player)+"] 胜利！"
+            print ""+str(user)+"["+str(cur_player)+"] 胜利！"
 
         return handout
 
